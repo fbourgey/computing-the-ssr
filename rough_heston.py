@@ -67,6 +67,27 @@ def charfunc_rheston(u, tau, params, xi_curve, n_pade: int = 2, n_quad: int = 30
 
 
 def ssr_rheston_charfunc(tau, params, xi_curve, n_pade: int = 2, n_quad: int = 30):
+    """
+    SSR via characteristic-function integrals using a Padé approx.
+
+    Parameters
+    ----------
+    tau : float or ndarray
+        Maturities.
+    params : dict
+        Model parameters (expects at least 'H', 'rho', 'nu', 'lbd' when needed).
+    xi_curve : callable
+        Forward variance curve xi_curve(t).
+    n_pade : int, optional
+        Padé order (default 2).
+    n_quad : int, optional
+        Quadrature points for inner charfunc integration (default 30).
+
+    Returns
+    -------
+    ndarray
+        SSR values matching shape of tau.
+    """
     rho = params["rho"]
     nu = params["nu"]
 
