@@ -1,14 +1,7 @@
-# skew-stickiness-ratio
+# computing-the-ssr
 
-This repository reproduces results on the **Skew-Stickiness Ratio (SSR)**
-from the following papers:
+This repository reproduces results from:
 
 - Friz, Peter K. and Gatheral, Jim (2025).
 *Computing the SSR*. Quantitative Finance, 2(5), 701–710.  
-[Link to paper](https://doi.org/10.1080/14697688.2025.2486173)
-
-<!-- - Abi Jaber, Eduardo and Li, Shaun(2025).  
-  *Capturing Smile Dynamics with the Quintic Volatility Model: SPX, Skew-Stickiness Ratio and VIX*.  
-  arXiv:2503.14158 preprint [Link to paper](https://arxiv.org/abs/2503.14158)   -->
-
----
+[[QF](https://doi.org/10.1080/14697688.2025.2486173)][[arXiv](https://arxiv.org/abs/2406.16131)]

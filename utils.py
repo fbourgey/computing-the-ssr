@@ -1,5 +1,6 @@
 import numpy as np
 from scipy.integrate import quad_vec
+from black import black_impvol
 
 
 def gauss_legendre(a: float, b: float, n: int) -> tuple[np.ndarray, np.ndarray]:
@@ -99,3 +100,62 @@ def lewis_formula_otm_price(phi, k, tau):
     result = np.exp(k_minus) - np.exp(k / 2) / np.pi * integral
 
     return result
+
+
+def black_otm_impvol_mc(
+    S: np.ndarray, k: float | np.ndarray, T: float, mc_error: bool = False
+) -> dict | np.ndarray:
+    """
+    Calculate Black implied volatility using Monte Carlo simulated stock prices and
+    out-of-the-money (OTM) prices.
+
+    Parameters
+    ----------
+    S : ndarray
+        Array of Monte Carlo simulated stock prices.
+    k : float or ndarray
+        Log-Forward Moneyness `k=log(K/F)` for which the implied volatility is
+        calculated.
+    T : float
+        Time to maturity of the option.
+    mc_error : bool, optional
+        If True, computes the 95% confidence interval for the implied volatility.
+
+    Returns
+    -------
+    dict or ndarray
+        If `mc_error` is False, returns an ndarray of OTM implied volatilities.
+        If `mc_error` is True, returns a dictionary with the following keys:
+        - 'otm_impvol': ndarray of OTM implied volatilities.
+        - 'otm_impvol_high': ndarray of upper bounds of the 95% confidence interval.
+        - 'otm_impvol_low': ndarray of lower bounds of the 95% confidence interval.
+        - 'error_95': ndarray of the 95% confidence interval errors for the option
+                      prices.
+        - 'otm_price': ndarray of the calculated OTM option prices.
+    """
+    k = np.atleast_1d(k)
+    F = np.mean(S)
+    K = F * np.exp(k)
+    # opttype: 1 for call, -1 for put, depending on moneyness
+    opttype = 2 * (K >= F) - 1  # 1 if K >= F (call), -1 if K < F (put)
+    payoff = np.maximum(opttype[None, :] * (S[:, None] - K[None, :]), 0.0)
+    otm_price = np.mean(payoff, axis=0)
+    otm_impvol = black_impvol(K=K, T=T, F=F, value=otm_price, opttype=opttype)
+
+    if mc_error:
+        error_95 = 1.96 * np.std(payoff, axis=0) / S.shape[0] ** 0.5
+        otm_impvol_high = black_impvol(
+            K=K, T=T, F=F, value=otm_price + error_95, opttype=opttype
+        )
+        otm_impvol_low = black_impvol(
+            K=K, T=T, F=F, value=otm_price - error_95, opttype=opttype
+        )
+        return {
+            "otm_impvol": otm_impvol,
+            "otm_impvol_high": otm_impvol_high,
+            "otm_impvol_low": otm_impvol_low,
+            "error_95": error_95,
+            "otm_price": otm_price,
+        }
+
+    return otm_impvol
